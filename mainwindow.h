@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "mainserver.h"
+#include "kdc.h"
 namespace Ui {
 class MainWindow;
 }
@@ -17,7 +17,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    MainServer *server;
+    KDC *kdc;
 };
 
 #endif // MAINWINDOW_H

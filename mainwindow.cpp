@@ -6,11 +6,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    server = new MainServer;
+    kdc = new KDC;
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete server;
+    delete kdc;
 }

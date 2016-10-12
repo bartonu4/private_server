@@ -1,10 +1,8 @@
 #ifndef MAINSERVER_H
 #define MAINSERVER_H
-#include <QTcpServer>
-#include <QTcpSocket>
 #include <QDebug>
 #include <QString>
-class MainServer: public QTcpServer
+class MainServer
 {
 private:
     static const int CHAR_SIZE = 8;
@@ -14,9 +12,7 @@ private:
 public:
     MainServer();
     static QString hash(QString message);
-public slots:
-    void processConenction();
-    void slotNewConnection();
+
 
 
 };
