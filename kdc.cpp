@@ -49,7 +49,8 @@ void KDC::processConenction()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
     QByteArray buffer = socket->readAll();
-
+    socket->write(QByteArray(QString("nu4"+socket->peerAddress().toString()+socket->peerPort()+"local port %1").arg(serverPort()).toUtf8()));
+    socket->flush();
 
         qDebug() << buffer;
 }
