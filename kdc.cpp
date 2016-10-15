@@ -48,18 +48,45 @@ KDC::~KDC()
 void KDC::processConenction()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
-    QByteArray buffer = socket->readAll();
-    socket->write(QByteArray(QString("nu4"+socket->peerAddress().toString()+socket->peerPort()+"local port %1").arg(serverPort()).toUtf8()));
-    socket->flush();
 
-        qDebug() << buffer;
+    switch (socketClients.value(socket)->getStatus()) {
+    case STATUS::NEW_CONNECTION:
+    {
+        MessageHandler handler;
+        MessageIdentify mtype;
+        handler.setStrategy(mtype);
+        handler.execute(socketClients.value(socket));
+        break;
+    }
+    default:
+        break;
+    }
+
 }
 
 void KDC::slotNewConnection()
 {
     QTcpSocket *socket = nextPendingConnection();
+    ServerClient * client= new ServerClient;
+    client->setSocket(socket);
+    client->setStatus(STATUS::NEW_CONNECTION);
+    socketClients.insert(socket, client);
+
+
     QObject::connect(socket,&QTcpSocket::readyRead,this,processConenction);
+    QObject::connect(socket,&QTcpSocket::disconnected, this, deleteConnection);
      qDebug() << "New connection established to "<< socket->peerAddress().toString();
 
 
+}
+
+void KDC::deleteConnection()
+{
+    QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
+    ServerClient *client  = socketClients.value(socket);
+    socketClients.remove(socket);
+    socket->deleteLater();
+
+    delete client;
+    qDebug() << "client deleted";
 }

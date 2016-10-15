@@ -5,13 +5,16 @@
 #include <QDebug>
 #include <QHash>
 #include <QtSql>
-
+#include "serverclient.h"
+#include "messagehandler.h"
 class KDC: public QTcpServer
 {
-    enum STATUS{NEW_CONNECTION, IDENTIFIED, KEY_GENERATED, AUTHENTIFICATED, CONNECTED };
-    QHash<quint32, QTcpSocket*> usersSocket;
-    QHash<QTcpSocket*, quint32> socketUsers;
-    QHash<quint32, STATUS> usersStatus;
+    using STATUS = ServerClient::STATUS;
+
+    QHash<QTcpSocket*, ServerClient*> socketClients;
+    //QHash<quint32, QTcpSocket*> usersSocket;
+    //QHash<QTcpSocket*, quint32> socketUsers;
+    //QHash<QTcpSocket*, STATUS> usersStatus;
     QSqlDatabase db;
 
     bool getUserFromSqlite(QString login);
@@ -22,6 +25,7 @@ public:
 public slots:
     void processConenction();
     void slotNewConnection();
+    void deleteConnection();
 
 };
 

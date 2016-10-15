@@ -1,8 +1,8 @@
 #ifndef CLIENT_H
 #define CLIENT_H
+#include <QTcpSocket>
 
-
-class Client
+class Client:public QTcpSocket
 {
 public:
     Client();

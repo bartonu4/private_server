@@ -17,13 +17,17 @@ SOURCES += main.cpp\
         user.cpp \
         kdc.cpp \
         mainserver.cpp \
-    client.cpp
+    client.cpp \
+    serverclient.cpp \
+    messagehandler.cpp
 
 HEADERS  += mainwindow.h\
              user.h \
             kdc.h \
             mainserver.h \
-    client.h
+    client.h \
+    serverclient.h \
+    messagehandler.h
 
 FORMS    += mainwindow.ui
 
