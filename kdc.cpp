@@ -38,7 +38,7 @@ KDC::KDC(): QTcpServer()
         qDebug() << "Listen";
     }
 
-    QObject::connect(this,newConnection,this,slotNewConnection);
+    QObject::connect(this,&QTcpServer::newConnection,this,&KDC::slotNewConnection);
 }
 
 KDC::~KDC()
@@ -73,8 +73,8 @@ void KDC::slotNewConnection()
     socketClients.insert(socket, client);
 
 
-    QObject::connect(socket,&QTcpSocket::readyRead,this,processConenction);
-    QObject::connect(socket,&QTcpSocket::disconnected, this, deleteConnection);
+    QObject::connect(socket,&QTcpSocket::readyRead,this,&KDC::processConenction);
+    QObject::connect(socket,&QTcpSocket::disconnected, this, &KDC::deleteConnection);
      qDebug() << "New connection established to "<< socket->peerAddress().toString();
 
 

@@ -2,6 +2,34 @@
 #define MAINSERVER_H
 #include <QDebug>
 #include <QString>
+#include <string>
+using std::string;
+
+#include <cstdlib>
+using std::exit;
+
+#include "cryptlib.h"
+using CryptoPP::Exception;
+
+#include "hex.h"
+using CryptoPP::HexEncoder;
+using CryptoPP::HexDecoder;
+
+#include "filters.h"
+using CryptoPP::StringSink;
+using CryptoPP::StringSource;
+using CryptoPP::StreamTransformationFilter;
+
+#include "aes.h"
+using CryptoPP::AES;
+
+#include "ccm.h"
+using CryptoPP::CBC_Mode;
+
+#include "osrng.h"
+using CryptoPP::AutoSeededRandomPool;
+
+#include "assert.h"
 class MainServer
 {
 private:
@@ -12,6 +40,7 @@ private:
 public:
     MainServer();
     static QString hash(QString message);
+    static QString aesEncrypt(QString message);
 
 
 

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "kdc.h"
+
 namespace Ui {
 class MainWindow;
 }

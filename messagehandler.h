@@ -2,6 +2,12 @@
 #define MESSAGEHANDLER_H
 #include "serverclient.h"
 #include "QSqlQuery"
+//#include <botan/botan.h>
+//#include <botan/symkey.h>
+#include <memory>
+
+
+//using namespace Botan;
 class MessageType
 {
 public:
@@ -12,6 +18,8 @@ class MessageIdentify:public MessageType
     void request(ServerClient * client)
     {
         QByteArray buffer = client->getSocket()->readAll();
+
+        int nu4 =5;
 
         QSqlQuery query("SELECT login FROM users");
         while (query.next())
