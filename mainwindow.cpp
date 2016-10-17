@@ -6,11 +6,23 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    kdc = new KDC;
+
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
     delete kdc;
+}
+
+
+
+void MainWindow::on_kdcButton_clicked()
+{
+    kdc = new KDC;
+}
+
+void MainWindow::on_clientButton_clicked()
+{
+    client = new Client;
 }
