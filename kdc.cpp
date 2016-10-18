@@ -50,14 +50,31 @@ KDC::~KDC()
 void KDC::processConenction()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
-
-    switch (socketClients.value(socket)->getStatus()) {
+    ServerClient *client = socketClients.value(socket);
+    switch (client->getStatus()) {
     case STATUS::NEW_CONNECTION:
     {
         MessageHandler handler;
         MessageIdentify mtype;
         handler.setStrategy(mtype);
-        handler.execute(socketClients.value(socket));
+        if(handler.execute(socketClients.value(socket)))
+        {
+            auto keys = socketClients.keys();
+            for(int i = 0; i < keys.size(); i++)
+            {
+                QJsonObject jsonObject;
+                QJsonDocument jsonDocument;
+                jsonObject.insert("action", "userConnected");
+                jsonObject.insert("login", client->getLogin());
+                jsonDocument.setObject(jsonObject);
+                keys[i]->write(MainServer::aesEncrypt(jsonDocument.toBinaryData(), socketClients.value(keys[i])->getHash()));
+                keys[i]->flush();
+                jsonObject["login"] = socketClients.value(keys[i])->getLogin();
+                jsonDocument.fromJson(jsonObject);
+                socket->write(MainServer::aesEncrypt(jsonDocument.toBinaryData(), client->getHash()));
+                socket->flush();
+            }
+        }
         break;
     }
     default:

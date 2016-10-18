@@ -20,10 +20,13 @@ public:
     void setAttempts();
     QTcpSocket *getSocket() const;
     void setSocket(QTcpSocket *value);
+    QByteArray getHash() const;
+    void setHash(const QByteArray &value);
 
 private:
     int id;
     QString login;
+    QByteArray hash;
     STATUS status;
     unsigned int attempts = 0;
     QTcpSocket * socket;

@@ -40,6 +40,7 @@ class MessageIdentify:public MessageType
                         client->setLogin(jsonObject['login'].toString());
                         client->setId(query.value(1).toInt());
                         client->setStatus(ServerClient::AUTHENTIFICATED);
+                        client->setHash(hash);
                         return true;
                     }
                     else
