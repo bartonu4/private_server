@@ -7,7 +7,7 @@
 QT       += core gui network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-QMAKE_LFLAGS += -verbose
+
 CONFIG += c++11
 TARGET = private-server
 TEMPLATE = app
@@ -30,20 +30,19 @@ HEADERS  += mainwindow.h\
     serverclient.h \
     messagehandler.h
 
-INCLUDEPATH += ../cryptopp564
-#release
-#{
-#LIBS += -L"../cryptopp564/Win32/Output/Release" -lcryptlib
-#}
-#debug
-#{
-LIBS += -L"../cryptopp564/Win32/Output/Debug" -lcryptlib_d
+INCLUDEPATH += ../../cryptopp564
+release
+{
+LIBS += -L"../private_server/cryptopp564/release" -lcryptopp564
+}
+debug
+{
+LIBS += -L"../private_server/cryptopp564/debug" -lcryptopp564
 
-#}
-#OBJECTS_DIR += "../Botan-1.11.32/build/obj/lib"
-#OBJECTS += ../Botan-1.11.32/build/obj/lib/*.obj
+}
+
 FORMS    += mainwindow.ui
-LINKER
+
 DISTFILES +=
 
 RESOURCES +=

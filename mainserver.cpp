@@ -30,15 +30,14 @@ QString MainServer::hash(QString message)
     return "hash";
 }
 
-QString MainServer::aesEncrypt(QString message)
+QString MainServer::aesEncrypt(QString message, QByteArray hash)
 {
-    CryptoPP::AutoSeededRandomPool prng;
 
-        byte key[AES::DEFAULT_KEYLENGTH];
-        prng.GenerateBlock(key, sizeof(key));
+         qDebug() <<AES::DEFAULT_KEYLENGTH << hash.size() <<AES::BLOCKSIZE ;
+       // prng.GenerateBlock(key, sizeof(key));
 
-        byte iv[AES::BLOCKSIZE];
-        prng.GenerateBlock(iv, sizeof(iv));
+        //byte iv[AES::BLOCKSIZE];
+        //prng.GenerateBlock(iv, sizeof(iv));
 
         string plain = "CBC Mode Test";
         string cipher, encoded, recovered;
@@ -48,7 +47,7 @@ QString MainServer::aesEncrypt(QString message)
 
         // Pretty print key
         encoded.clear();
-        StringSource(key, sizeof(key), true,
+        StringSource((unsigned char*)hash.data(), hash.size(), true,
             new HexEncoder(
                 new StringSink(encoded)
             ) // HexEncoder
@@ -58,7 +57,7 @@ QString MainServer::aesEncrypt(QString message)
 
         // Pretty print iv
         encoded.clear();
-        StringSource(iv, sizeof(iv), true,
+        StringSource((unsigned char*)hash.data(), hash.size(), true,
             new HexEncoder(
                 new StringSink(encoded)
             ) // HexEncoder
@@ -67,13 +66,12 @@ QString MainServer::aesEncrypt(QString message)
 
         /*********************************\
         \*********************************/
-
         try
         {
             qDebug() << "plain text: " << QString::fromStdString(plain)  ;
 
             CBC_Mode< AES >::Encryption e;
-            e.SetKeyWithIV(key, sizeof(key), iv);
+            e.SetKeyWithIV((unsigned char*)hash.data(), hash.size(),(unsigned char*) hash.data());
 
             // The StreamTransformationFilter removes
             //  padding as required.
@@ -89,13 +87,22 @@ QString MainServer::aesEncrypt(QString message)
 
             exit(1);
         }
+        return QString::fromStdString(cipher);
 
-        /*********************************\
-        \*********************************/
+
+
+}
+
+QString MainServer::aesDecrypt(QString message, QByteArray hash)
+{
+
+    /*********************************\
+    \*********************************/
 
         // Pretty print
-        encoded.clear();
-        StringSource(cipher, true,
+        string encoded;
+        string recovered;
+        StringSource(message.toStdString(), true,
             new HexEncoder(
                 new StringSink(encoded)
             ) // HexEncoder
@@ -108,11 +115,11 @@ QString MainServer::aesEncrypt(QString message)
         try
         {
             CBC_Mode< AES >::Decryption d;
-            d.SetKeyWithIV(key, sizeof(key), iv);
+            d.SetKeyWithIV((unsigned char *)hash.data(), sizeof(hash), (unsigned char *)hash.data());
 
             // The StreamTransformationFilter removes
             //  padding as required.
-            StringSource s(cipher, true,
+            StringSource s(message.toStdString(), true,
                 new StreamTransformationFilter(d,
                     new StringSink(recovered)
                 ) // StreamTransformationFilter
@@ -127,5 +134,6 @@ QString MainServer::aesEncrypt(QString message)
 
             exit(1);
         }
+        return QString::fromStdString(recovered);
 }
 

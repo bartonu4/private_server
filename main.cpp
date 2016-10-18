@@ -14,7 +14,8 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
     MainServer::hash("abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcda");
-    MainServer::aesEncrypt("nu4");
+    auto res= MainServer::aesEncrypt("nu4",QByteArray::fromHex("C6BB21A8EEC5DF3AA21DB9AE3C9A9EAB"));
+    MainServer::aesEncrypt(res,QByteArray::fromHex("C6BB21A8EEC5DF3AA21DB9AE3C9A9EAB"));
 
     return a.exec();
 }

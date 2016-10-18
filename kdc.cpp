@@ -23,7 +23,7 @@ KDC::KDC(): QTcpServer()
     db = QSqlDatabase::addDatabase("QSQLITE");
     //db.setHostName(":users.sqlite");
     qDebug() <<QCoreApplication::applicationDirPath();
-    db.setDatabaseName("users.sqlite");
+    db.setDatabaseName("../private-server/users.sqlite");
     if(db.open())
     {
         qDebug() << "Db opened";
@@ -33,6 +33,8 @@ KDC::KDC(): QTcpServer()
         qDebug() << "Last error" << db.lastError().text();
     }
     qDebug() << getUserFromSqlite("root");
+
+    //Initialize server
     if(listen(QHostAddress::Any,7777))
     {
         qDebug() << "Listen";
