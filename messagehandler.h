@@ -15,11 +15,11 @@
 class MessageType
 {
 public:
-    virtual void request(ServerClient * client) = 0;
+    virtual bool request(ServerClient * client) = 0;
 };
 class MessageIdentify:public MessageType
 {
-    void request(ServerClient * client)
+    bool request(ServerClient * client)
         {
             client->setAttempts();
             QJsonObject jsonObject;
@@ -40,6 +40,7 @@ class MessageIdentify:public MessageType
                         client->setLogin(jsonObject['login'].toString());
                         client->setId(query.value(1).toInt());
                         client->setStatus(ServerClient::AUTHENTIFICATED);
+                        return true;
                     }
                     else
                     {
@@ -54,9 +55,8 @@ class MessageIdentify:public MessageType
             else {
                 wrongMessage(client, "Wrong fields");
             }
-
-            return ;
-        }
+            return false;
+       }
 
         void wrongMessage(ServerClient * client, const QString error)
         {
@@ -84,9 +84,9 @@ public:
     {
         message = &messageType;
     }
-    void execute(ServerClient * client)
+    bool execute(ServerClient * client)
     {
-        message->request(client);
+        return message->request(client);
     }
 };
 
