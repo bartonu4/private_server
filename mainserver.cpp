@@ -30,7 +30,7 @@ QString MainServer::hash(QString message)
     return "hash";
 }
 
-QString MainServer::aesEncrypt(QString message, QByteArray hash)
+QByteArray MainServer::aesEncrypt(QString message, QByteArray hash)
 {
 
          qDebug() <<AES::DEFAULT_KEYLENGTH << hash.size() <<AES::BLOCKSIZE ;
@@ -75,7 +75,7 @@ QString MainServer::aesEncrypt(QString message, QByteArray hash)
 
             // The StreamTransformationFilter removes
             //  padding as required.
-            StringSource s(plain, true,
+            StringSource s(message.toStdString(), true,
                 new StreamTransformationFilter(e,
                     new StringSink(cipher)
                 ) // StreamTransformationFilter
@@ -87,13 +87,24 @@ QString MainServer::aesEncrypt(QString message, QByteArray hash)
 
             exit(1);
         }
-        return QString::fromStdString(cipher);
+;
+
+        encoded.clear();
+        StringSource(cipher, true,
+            new HexEncoder(
+                new StringSink(encoded)
+            ) // HexEncoder
+        ); // StringSource
+
+
+        qDebug() << "encrypted text: " << QString::fromStdString(encoded)  ;
+        return QByteArray::fromStdString(cipher);
 
 
 
 }
 
-QString MainServer::aesDecrypt(QString message, QByteArray hash)
+QString MainServer::aesDecrypt(QByteArray message, QByteArray hash)
 {
 
     /*********************************\
@@ -115,14 +126,16 @@ QString MainServer::aesDecrypt(QString message, QByteArray hash)
         try
         {
             CBC_Mode< AES >::Decryption d;
-            d.SetKeyWithIV((unsigned char *)hash.data(), sizeof(hash), (unsigned char *)hash.data());
+            d.SetKeyWithIV((unsigned char *)hash.data(), hash.size(), (unsigned char *)hash.data());
 
             // The StreamTransformationFilter removes
             //  padding as required.
             StringSource s(message.toStdString(), true,
+
                 new StreamTransformationFilter(d,
                     new StringSink(recovered)
                 ) // StreamTransformationFilter
+
             ); // StringSource
 
 
@@ -131,7 +144,7 @@ QString MainServer::aesDecrypt(QString message, QByteArray hash)
         }
         catch(const CryptoPP::Exception& e)
         {
-
+            qDebug() <<QString::fromStdString(e.GetWhat());
             exit(1);
         }
         return QString::fromStdString(recovered);

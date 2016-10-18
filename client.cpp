@@ -58,9 +58,13 @@ void Client::connectToKDC()
       {
             qDebug("Connected!");
       }
+
+      auto hash         = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Md5);
+      auto encrypted    = MainServer::aesEncrypt(hash,hash);
       QJsonObject jsonObj;
       QJsonDocument document;
       jsonObj["login"] = login;
+      jsonObj["message"]= encrypted;
 
       document.setObject(jsonObj);
       socketToKDC->write(document.toBinaryData());

@@ -40,8 +40,8 @@ private:
 public:
     MainServer();
     static QString hash(QString message);
-    static QString aesEncrypt(QString message, QByteArray hash);
-    static QString aesDecrypt(QString message, QByteArray hash);
+    static QByteArray aesEncrypt(QString message, QByteArray hash);
+    static QString aesDecrypt(QByteArray message, QByteArray hash);
 
 
 

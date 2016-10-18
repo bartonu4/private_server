@@ -4,6 +4,8 @@
 #include <QTcpSocket>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QCryptographicHash>
+#include "mainserver.h"
 class Client:public QTcpServer
 {
     QString login;
