@@ -70,7 +70,7 @@ void KDC::processConenction()
                 keys[i]->write(MainServer::aesEncrypt(jsonDocument.toBinaryData(), socketClients.value(keys[i])->getHash()));
                 keys[i]->flush();
                 jsonObject["login"] = socketClients.value(keys[i])->getLogin();
-                jsonDocument.fromJson(jsonObject);
+                jsonDocument.setObject(jsonObject);
                 socket->write(MainServer::aesEncrypt(jsonDocument.toBinaryData(), client->getHash()));
                 socket->flush();
             }
