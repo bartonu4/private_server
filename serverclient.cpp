@@ -50,7 +50,17 @@ void ServerClient::setSocket(QTcpSocket *value)
     socket = value;
 }
 
+QByteArray ServerClient::getHash() const
+{
+    return hash;
+}
+
+void ServerClient::setHash(const QByteArray &value)
+{
+    hash = value;
+}
+
 ServerClient::ServerClient()
 {
-
+    
 }
