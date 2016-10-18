@@ -5,6 +5,10 @@
 //#include <botan/botan.h>
 //#include <botan/symkey.h>
 #include <memory>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <mainserver.h>
 
 
 //using namespace Botan;
@@ -16,26 +20,59 @@ public:
 class MessageIdentify:public MessageType
 {
     void request(ServerClient * client)
-    {
-        QByteArray buffer = client->getSocket()->readAll();
-
-        int nu4 =5;
-
-        QSqlQuery query("SELECT login FROM users");
-        while (query.next())
         {
-                 QString user = query.value(0).toString();
-
-                 qDebug() << user;
-
-                if(! QString::compare(user,QString(buffer)))
+            client->setAttempts();
+            QJsonObject jsonObject;
+            QJsonDocument jsonDocument;
+            QByteArray buffer = client->getSocket()->readAll();
+            jsonDocument.fromBinaryData(buffer);
+            jsonObject = jsonDocument.object();
+            if(jsonObject['login'] != QJsonValue::Undefined && jsonObject['message'] != QJsonValue::Undefined)
+            {
+                QSqlQuery query(QString("SELECT password, id FROM users WHERE login='%1'").arg(jsonObject['login'].toString()));
+                if(query.size() > 0)
                 {
-                    return ;
-                    qDebug() << "true";
+                    query.next();
+                    QByteArray hash = QCryptographicHash::hash(query.value(0).toByteArray(), QCryptographicHash::Md5);
+                    QString message = MainServer::aesDecrypt(jsonObject['message'].toString(), hash);
+                    if(message == query.value(0).toString())
+                    {
+                        client->setLogin(jsonObject['login'].toString());
+                        client->setId(query.value(1).toInt());
+                        client->setStatus(ServerClient::AUTHENTIFICATED);
+                    }
+                    else
+                    {
+                        wrongMessage(client, "Wrong password");
+                    }
                 }
+                else
+                {
+                    wrongMessage(client, "Unknown client");
+                }
+            }
+            else {
+                wrongMessage(client, "Wrong fields");
+            }
+
+            return ;
         }
-        return ;
-    }
+
+        void wrongMessage(ServerClient * client, const QString error)
+        {
+            if(client->getAttempts() < 3)
+            {
+                QJsonObject jsonAnswer;
+                jsonAnswer.insert("error", error);
+
+                client->getSocket()->write(QJsonDocument(jsonAnswer).toBinaryData());
+                client->getSocket()->flush();
+            }
+            else
+            {
+                client->getSocket()->disconnectFromHost();
+            }
+        }
 };
 
 class MessageHandler
