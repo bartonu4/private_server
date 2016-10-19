@@ -51,7 +51,7 @@ class MessageIdentify:public MessageType
 
 
                     QByteArray hash = QCryptographicHash::hash(query.value(0).toByteArray(), QCryptographicHash::Md5);
-                    QString message = MainServer::aesDecrypt(jsonObject["message"].toVariant().toByteArray(), hash);
+                    QString message = MainServer::aesDecrypt(QByteArray::fromBase64(jsonObject["message"].toString().toUtf8()), hash);
                     if(message == query.value(0).toString())
                     {
                         client->setLogin(jsonObject["login"].toString());
