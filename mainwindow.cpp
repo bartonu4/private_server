@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
     client = nullptr;
     login = new QLineEdit();
     password = new QLineEdit();
+     kdc = new KDC{};
 }
 
 MainWindow::~MainWindow()
@@ -45,7 +46,7 @@ void MainWindow::on_clientButton_clicked()
 
 void MainWindow::on_kdcButton_clicked()
 {
-    kdc = new KDC{};
+
 }
 
 void MainWindow::submitClick()

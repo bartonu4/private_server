@@ -50,7 +50,7 @@ Client::Client()
 void Client::connectToKDC()
 {
 
-    socketToKDC->connectToHost("127.0.0.1", 55056);
+    socketToKDC->connectToHost("127.0.0.1", 7777);
 
     //QObject::connect(socketToKDC, &QTcpSocket::connected, this, &Client::establishSecureConnection);
 
@@ -64,7 +64,7 @@ void Client::connectToKDC()
       QJsonObject jsonObj;
       QJsonDocument document;
       jsonObj["login"] = login;
-      jsonObj["message"]= encrypted;
+      jsonObj["message"]= QString::fromStdString(encrypted.toStdString());
 
       document.setObject(jsonObj);
       socketToKDC->write(document.toBinaryData());

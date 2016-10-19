@@ -1,6 +1,7 @@
 #ifndef MESSAGEHANDLER_H
 #define MESSAGEHANDLER_H
 #include "serverclient.h"
+#include <QSqlError>
 #include "QSqlQuery"
 //#include <botan/botan.h>
 //#include <botan/symkey.h>
@@ -26,16 +27,31 @@ class MessageIdentify:public MessageType
             QJsonObject jsonObject;
             QJsonDocument jsonDocument;
             QByteArray buffer = client->getSocket()->readAll();
-            jsonDocument.fromBinaryData(buffer);
+            jsonDocument= QJsonDocument::fromBinaryData(buffer,QJsonDocument::BypassValidation);
             jsonObject = jsonDocument.object();
             if(jsonObject["login"] != QJsonValue::Undefined && jsonObject["message"] != QJsonValue::Undefined)
             {
-                QSqlQuery query(QString("SELECT password, id FROM users WHERE login='%1'").arg(jsonObject["login"].toString()));
-                if(query.size() > 0)
+                QString   selectQuery(QString("SELECT password, id, login FROM users WHERE login=:login"));
+
+                qDebug() << selectQuery;
+                QSqlQuery query;
+                if(!query.prepare(selectQuery))
                 {
-                    query.next();
+                    qDebug() << query.lastError();
+                }
+                query.bindValue(0,jsonObject["login"].toString());
+                if(!query.exec())
+                {
+                    qDebug() << query.lastError();
+                }
+                    qDebug() << query.size();
+                     query.next();
+                if(QString::compare(jsonObject["login"].toString() , query.value(2).toString()) == 0)
+                {
+
+
                     QByteArray hash = QCryptographicHash::hash(query.value(0).toByteArray(), QCryptographicHash::Md5);
-                    QString message = MainServer::aesDecrypt(jsonObject["message"].toString().toUtf8(), hash);
+                    QString message = MainServer::aesDecrypt(jsonObject["message"].toVariant().toByteArray(), hash);
                     if(message == query.value(0).toString())
                     {
                         client->setLogin(jsonObject["login"].toString());

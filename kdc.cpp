@@ -23,7 +23,7 @@ KDC::KDC(): QTcpServer()
     db = QSqlDatabase::addDatabase("QSQLITE");
     //db.setHostName(":users.sqlite");
     qDebug() <<QCoreApplication::applicationDirPath();
-    db.setDatabaseName("../private-server/users.sqlite");
+    db.setDatabaseName("../private_server/users.sqlite");
     if(db.open())
     {
         qDebug() << "Db opened";
@@ -73,7 +73,9 @@ void KDC::processConenction()
                 jsonDocument.setObject(jsonObject);
                 socket->write(MainServer::aesEncrypt(jsonDocument.toBinaryData(), client->getHash()));
                 socket->flush();
+                 qDebug() << "success";
             }
+
         }
         break;
     }
