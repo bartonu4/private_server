@@ -8,8 +8,11 @@
 #include "mainserver.h"
 class Client:public QTcpServer
 {
+    enum STATUS{AUTHORIZATED, NOT_AUTHORIZATED};
+    STATUS status;
     QString login;
     QString password;
+    QByteArray hash;
     QTcpSocket *socketToKDC;
 public:
     Client();
@@ -20,9 +23,16 @@ public:
     QString getPassword() const;
     void setPassword(const QString &value);
 
+    STATUS getStatus() const;
+    void setStatus(const STATUS &value);
+
+    QByteArray getHash() const;
+    void sethash(const QByteArray &value);
+
 public slots:
     void slotNewConnection();
     void establishSecureConnection();
+    void getInfoFromKDC();
 };
 
 #endif // CLIENT_H

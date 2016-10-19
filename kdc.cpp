@@ -59,21 +59,30 @@ void KDC::processConenction()
         handler.setStrategy(mtype);
         if(handler.execute(socketClients.value(socket)))
         {
+            QJsonObject jsonSuccessObject;
+            QJsonDocument jsonSuccessDocument;
+            jsonSuccessObject.insert("message", QString(MainServer::aesEncrypt("connected", client->getHash()).toBase64()));
+            jsonSuccessDocument.setObject(jsonSuccessObject);
+            socket->write(jsonSuccessDocument.toBinaryData());
+            socket->flush();
             auto keys = socketClients.keys();
             for(int i = 0; i < keys.size(); i++)
             {
-                QJsonObject jsonObject;
-                QJsonDocument jsonDocument;
-                jsonObject.insert("action", "userConnected");
-                jsonObject.insert("login", client->getLogin());
-                jsonDocument.setObject(jsonObject);
-                keys[i]->write(MainServer::aesEncrypt(jsonDocument.toBinaryData(), socketClients.value(keys[i])->getHash()));
-                keys[i]->flush();
-                jsonObject["login"] = socketClients.value(keys[i])->getLogin();
-                jsonDocument.setObject(jsonObject);
-                socket->write(MainServer::aesEncrypt(jsonDocument.toBinaryData(), client->getHash()));
-                socket->flush();
-                 qDebug() << "success";
+                if(keys[i] != client->getSocket())
+                {
+                        QJsonObject jsonObject;
+                        QJsonDocument jsonDocument;
+                        jsonObject.insert("action", "userConnected");
+                        jsonObject.insert("login", client->getLogin());
+                        jsonDocument.setObject(jsonObject);
+                        keys[i]->write(MainServer::aesEncrypt(jsonDocument.toBinaryData().toBase64(), socketClients.value(keys[i])->getHash()));
+                        keys[i]->flush();
+                        jsonObject["login"] = socketClients.value(keys[i])->getLogin();
+                        jsonDocument.setObject(jsonObject);
+                        socket->write(MainServer::aesEncrypt(jsonDocument.toBinaryData(), client->getHash()));
+                        socket->flush();
+                         qDebug() << "success";
+                }
             }
 
         }

@@ -51,7 +51,15 @@ class MessageIdentify:public MessageType
 
 
                     QByteArray hash = QCryptographicHash::hash(query.value(0).toByteArray(), QCryptographicHash::Md5);
-                    QString message = MainServer::aesDecrypt(QByteArray::fromBase64(jsonObject["message"].toString().toUtf8()), hash);
+                    QString message;
+                    try
+                    {
+                        message = MainServer::aesDecrypt(QByteArray::fromBase64(jsonObject["message"].toString().toUtf8()), hash);
+                    }catch(...)
+                    {
+                        wrongMessage(client, "Wrong password");
+                        return false;
+                    }
                     if(message == query.value(0).toString())
                     {
                         client->setLogin(jsonObject["login"].toString());
@@ -78,6 +86,7 @@ class MessageIdentify:public MessageType
 
         void wrongMessage(ServerClient * client, const QString error)
         {
+            qDebug() << "error: " << error;
             if(client->getAttempts() < 3)
             {
                 QJsonObject jsonAnswer;

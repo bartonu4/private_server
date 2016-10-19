@@ -145,7 +145,7 @@ QString MainServer::aesDecrypt(QByteArray message, QByteArray hash)
         catch(const CryptoPP::Exception& e)
         {
             qDebug() <<QString::fromStdString(e.GetWhat());
-            exit(1);
+            throw 1;
         }
         return QString::fromStdString(recovered);
 }
