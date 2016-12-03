@@ -158,3 +158,34 @@ QString MainServer::aesDecrypt(QByteArray message, QByteArray hash)
         return QString::fromStdString(recovered);
 }
 
+QByteArray MainServer::preDecryption(const QString &string)
+{
+    return QByteArray::fromBase64(string.toUtf8());
+}
+
+QByteArray MainServer::postDecryption(const QString &string)
+{
+    return QByteArray::fromBase64(string.toUtf8());
+}
+
+QByteArray MainServer::generateKey()
+{
+    AutoSeededRandomPool rnd;
+
+    // Generate a random key
+    SecByteBlock key(0x00, AES::DEFAULT_KEYLENGTH);
+    rnd.GenerateBlock( key, key.size() );
+    QByteArray bkey;
+    foreach (auto byte, key) {
+        bkey.append((char) byte);
+    }
+
+    return bkey;
+
+}
+
+QByteArray MainServer::preEncryption(const QJsonDocument &document)
+{
+    return document.toBinaryData().toBase64();
+}
+

@@ -19,6 +19,7 @@ ApplicationWindow {
         id: pageLoader
         anchors.fill: parent
         source: "login.qml"
+        asynchronous: false;
         onLoaded: {
             console.log("login loaded")
 

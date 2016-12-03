@@ -65,7 +65,9 @@ public slots:
             break;
         case Client::STATUS::AUTHORIZATED:
             QMetaObject::invokeMethod(loader, "setClient");
-
+            QQuickItem *loaderItem = qvariant_cast<QQuickItem*> (loader->property("item"));
+            auto clientModel = loaderItem->findChild<QObject*>("listClients");
+            QObject::connect(clientModel, SIGNAL(chooseClient(QString)), &client, SLOT(connectToClient(QString)));
             break;
         }
 

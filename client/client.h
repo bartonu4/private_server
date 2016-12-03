@@ -30,12 +30,13 @@ public:
 
     STATUS getStatus() const;
     void setStatus(const STATUS &value);
-    void connectToClient(const QString &name);
+
 public slots:
     void slotNewConnection();
     void slotProcessConnection();
     void establishSecureConnection();
     void getInfoFromKDC();
+    void connectToClient(const QString &name);
 
 private:
     STATUS status;

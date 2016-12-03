@@ -22,17 +22,24 @@ void Client::setPassword(const QString &value)
 
 void Client::slotNewConnection()
 {
+    qDebug() << "asbhfkwhjevgfbkwejbvfkwejb";
+    QTcpSocket *socket = nextPendingConnection();
+    socket->waitForReadyRead();
+    auto buffer = socket->readAll();
+    QJsonDocument jsonDocument;
+    QJsonObject jsonObject;
+    jsonDocument = QJsonDocument::fromBinaryData(MainServer::postDecryption(MainServer::aesDecrypt(buffer, getHash())),QJsonDocument::BypassValidation);
+    jsonObject = jsonDocument.object();
+    auto name = jsonObject["login"].toString();
+    qDebug() << "slotNewConnection " << name;
+    connectedToClients.insert(name, socket);
+    clientsHash.insert(name, jsonObject["key"].toString().toUtf8());
 }
 
 void Client::slotProcessConnection()
 {
 
-    QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
-    auto buffer = socket->readAll();
-    QJsonDocument jsonDocument;
-    QJsonObject jsonObject;
-    jsonDocument = QJsonDocument::fromBinaryData(QByteArray::fromBase64(MainServer::aesDecrypt(buffer, getHash()).toUtf8()),QJsonDocument::BypassValidation);
-    jsonObject = jsonDocument.object();
+
 }
 
 void Client::establishSecureConnection()
@@ -59,21 +66,22 @@ void Client::getInfoFromKDC()
 
             emit newClientAvailable(newClientLogin);
         }
-        else if(jsonObject["action"].toString()  == "client to connect")
+        else if(jsonObject["action"].toString()  == "CtC")
         {
-            auto keys = connectedToClients.keys();
-            for(int i = 0; i < keys.size(); i++)
-            {
-                if(keys[i] == jsonObject["login"].toString() )
-                {
-                   auto socket = connectedToClients.value(keys[i]);
-                   socket->connectToHost("127.0.0.1",jsonObject["port"].toString().toUShort() );
-                   socket->write(jsonObject["message"].toString().toUtf8());
 
-                }
-            }
-             qDebug() << "client to connect" << jsonObject["login"].toString();
-            clientsHash.insert(jsonObject["login"].toString(), jsonObject["hash"].toString().toUtf8());
+
+            auto socket = new QTcpSocket;
+            socket->bind();
+            connectedToClients.insert(jsonObject["login"].toString(), socket);
+            qDebug() << jsonObject["port"].toInt();
+
+            socket->connectToHost("127.0.0.1",jsonObject["port"].toInt() );
+            socket->write(jsonObject["message"].toString().toUtf8());
+            socket->flush();
+
+
+             qDebug() << "CtC" << jsonObject["login"].toString() << jsonObject["port"].toString().toUShort();
+            clientsHash.insert(jsonObject["login"].toString(), jsonObject["key"].toString().toUtf8());
         }
     }
     else if(getStatus() == NOT_AUTHORIZATED)
@@ -111,20 +119,17 @@ void Client::setStatus(const STATUS &value)
 
 void Client::connectToClient(const QString &name)
 {
-    QTcpSocket *socket  = new QTcpSocket();
-    socketToKDC->bind();
-    connectedToClients.insert(name, socket);
-
 
     QJsonObject jsonObj;
     QJsonDocument document;
-    jsonObj["action"] = "client to connect";
+
+    jsonObj["action"] = "CtC";
     jsonObj["login"] = name;
-    jsonObj["port"] = socket->localPort();
+
     document.setObject(jsonObj);
-    socketToKDC->write(MainServer::aesEncrypt(document.toBinaryData().toBase64(), getHash()));
+
+    socketToKDC->write(MainServer::aesEncrypt(MainServer::preEncryption(document), getHash()));
     socketToKDC->flush();
-    QObject::connect(socket,&QTcpSocket::readyRead,this,&Client::slotProcessConnection);
 
 }
 

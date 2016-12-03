@@ -44,11 +44,14 @@ RowLayout {
 
 
 
+
         ListView {
 
             anchors.fill: parent
             id: listClients
+            objectName: "listClients"
 
+            signal chooseClient(string msg)
             currentIndex: -1
 
             //width: 180; height: 200
@@ -90,7 +93,9 @@ RowLayout {
                     listClients.currentIndex = model.index
                     messageModel.recipient = text;
                     console.log(listClients.currentIndex)
-                    console.log(messageModel.recipient)
+                    listClients.chooseClient(messageModel.recipient)
+
+                    //console.log(messageModel.recipient)
                     //clientsModel.add("nu4")
                 }
 

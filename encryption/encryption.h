@@ -2,6 +2,7 @@
 #define MAINSERVER_H
 #include <QDebug>
 #include <QString>
+#include <QJsonDocument>
 #include <string>
 using std::string;
 
@@ -28,6 +29,7 @@ using CryptoPP::CBC_Mode;
 
 #include "osrng.h"
 using CryptoPP::AutoSeededRandomPool;
+using CryptoPP::SecByteBlock;
 
 #include "assert.h"
 class MainServer
@@ -42,6 +44,10 @@ public:
     static QString hash(QString message);
     static QByteArray aesEncrypt(QString message, QByteArray hash);
     static QString aesDecrypt(QByteArray message, QByteArray hash);
+    static QByteArray preEncryption(const QJsonDocument &document);
+    static QByteArray preDecryption(const QString &string);
+    static QByteArray postDecryption(const QString &string);
+    static QByteArray generateKey();
 
 
 

@@ -94,55 +94,64 @@ void KDC::processConenction()
     }
     case STATUS::CONNECTED:
     {
+        qDebug() << "pizda";
         QJsonObject jsonFromObject;
         QJsonDocument jsonFromDocument;
+
         QByteArray buffer = client->getSocket()->readAll();
-        buffer = QByteArray::fromBase64(MainServer::aesDecrypt(buffer, client->getHash()).toUtf8());
+        buffer = MainServer::postDecryption(MainServer::aesDecrypt(buffer, client->getHash()));
+        qDebug() << "DUFFER: " << buffer;
         jsonFromDocument= QJsonDocument::fromBinaryData(buffer,QJsonDocument::BypassValidation);
         jsonFromObject = jsonFromDocument.object();
-        quint16 port; QString login;
-        if(jsonFromObject["login"] != QJsonValue::Undefined && jsonFromObject["port"] != QJsonValue::Undefined)
+        qDebug() << jsonFromObject["action"].toString();
+        if (jsonFromObject["action"] == "CtC")
         {
-           login = jsonFromObject["login"].toString();
-           //port = client->setClientToConnect(jsonFromObject["port"].toString().toUShort());
 
-        }
-
-        QJsonObject jsonObject;
-        QJsonDocument jsonDocument;
-        jsonObject.insert("action", "connect to client");
-        jsonObject["login"] = client->getLogin();
-        jsonObject["port"] = client->getPort();
-
-
-        auto keys = socketClients.keys();
-        for(int i = 0; i < keys.size(); i++)
-        {
-            if(keys[i] != client->getSocket())
+            QString login;
+            if(jsonFromObject["login"] != QJsonValue::Undefined)
             {
-                if(QString::compare(socketClients.value(keys[i])->getLogin(),login) == 0)
+               login = jsonFromObject["login"].toString();
+               //port = client->setClientToConnect(jsonFromObject["port"].toString().toUShort());
+
+            }
+            qDebug() << "KDC get key: " << login;
+
+            QJsonObject jsonObject;
+            QJsonDocument jsonDocument;
+            jsonObject.insert("action", "CtC");
+            jsonObject["login"] = client->getLogin();
+            jsonObject["key"] = QString(MainServer::generateKey());
+
+            auto keys = socketClients.keys();
+            for(int i = 0; i < keys.size(); i++)
+            {
+                if(keys[i] != client->getSocket())
                 {
-                    auto clientTo = socketClients.value(keys[i]);
-                    //jsonObject["clientTo"] = clientTo->getLogin();
-                    jsonDocument.setObject(jsonObject);
-                    QByteArray buffer = jsonDocument.toBinaryData().toBase64();
-                    buffer = MainServer::aesEncrypt(buffer, clientTo->getHash());
-                    keys[i]->write(buffer);
-                    keys[i]->flush();
-                    QJsonObject jsonFirstClientObject;
-                    jsonFirstClientObject.insert("action", "connect to client");
-                    jsonFirstClientObject["message"] = QString(buffer.toBase64());
-                    jsonFirstClientObject["login"]   = clientTo->getLogin();
-                    jsonFirstClientObject["port"]   = clientTo->getPort();
-                    jsonFirstClientObject["hash"]   = QString(clientTo->getHash().toBase64());
-                    socket->write(MainServer::aesEncrypt(jsonDocument.toBinaryData().toBase64(), client->getHash()));
-                    socket->flush();
+                    if(QString::compare(socketClients.value(keys[i])->getLogin(),login) == 0)
+                    {
+                        auto clientTo = socketClients.value(keys[i]);
+                        //jsonObject["clientTo"] = clientTo->getLogin();
+                        jsonDocument.setObject(jsonObject);
+                        QByteArray buffer = MainServer::aesEncrypt(MainServer::preEncryption(jsonDocument), clientTo->getHash());
+
+                        QJsonObject jsonFirstClientObject;
+                        jsonFirstClientObject.insert("action", "CtC");
+                        jsonFirstClientObject["message"] = QString(buffer);
+                        jsonFirstClientObject["login"]   = clientTo->getLogin();
+                        jsonFirstClientObject["port"]   = clientTo->getPort();
+                        jsonFirstClientObject["key"]   = jsonObject["key"];
+                        jsonDocument.setObject(jsonFirstClientObject);
+                        socket->write(MainServer::aesEncrypt(MainServer::preEncryption(jsonDocument), client->getHash()));
+                        socket->flush();
 
 
 
+                    }
                 }
             }
+
         }
+
 
     }
     default:
