@@ -14,6 +14,7 @@ public:
     ClientsModel(QObject *parent = 0);
 
     Q_INVOKABLE void add(const QStringList &client);
+    Q_INVOKABLE void deleteClient(const QString &client);
     QStringList data() ;
 
 

@@ -54,6 +54,7 @@ signals:
     void connectionStatus();
     void newClientAvailable(QString client);
     void getNewMessage(QString client, QString message);
+    void deleteClient(QString client);
 };
 
 #endif // CLIENT_H

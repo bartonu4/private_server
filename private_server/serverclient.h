@@ -40,6 +40,7 @@ private:
     unsigned int attempts = 0;
     QTcpSocket * socket;
     quint16 port;
+
     QPair<QString, quint16> clientToConnect;
 
 };

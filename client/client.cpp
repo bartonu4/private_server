@@ -35,20 +35,36 @@ void Client::slotNewConnection()
 void Client::slotProcessConnection()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
-
-    auto buffer = socket->readAll();
-
+    auto name = connectedToClients.key(socket);
+    QByteArray sessHash;
     QJsonDocument jsonDocument;
     QJsonObject jsonObject;
+    auto buffer = socket->readAll();
 
-    jsonDocument = QJsonDocument::fromBinaryData(MainServer::postDecryption(MainServer::aesDecrypt(buffer, getHash())),QJsonDocument::BypassValidation);
+    if(connectedToClients.contains(name))
+    {
+        sessHash = clientsHash.value(name);
+        jsonDocument = QJsonDocument::fromBinaryData(MainServer::postDecryption(MainServer::aesDecrypt( buffer, sessHash)),QJsonDocument::BypassValidation);
+    }
+    else
+    {
+        sessHash = hash;
+        jsonDocument = QJsonDocument::fromBinaryData(MainServer::postDecryption(MainServer::aesDecrypt(QByteArray::fromBase64( buffer), sessHash)),QJsonDocument::BypassValidation);
+
+    }
+
+
+
+
+    qDebug() << "buffer" << buffer;
+
     jsonObject = jsonDocument.object();
     if(jsonObject["action"].toString() == "CtC")
     {
         auto name = jsonObject["login"].toString();
         qDebug() << "slotNewConnection " << name;
         connectedToClients.insert(name, socket);
-        clientsHash.insert(name, jsonObject["key"].toString().toUtf8());
+        clientsHash.insert(name, QByteArray::fromBase64(jsonObject["key"].toString().toUtf8()));
     }
     else if(jsonObject["action"].toString() == "message")
     {
@@ -98,19 +114,28 @@ void Client::getInfoFromKDC()
             connectedToClients.insert(jsonObject["login"].toString(), socket);
             qDebug() << jsonObject["port"].toInt();
 
-            socket->connectToHost("127.0.0.1",jsonObject["port"].toInt() );
-            if(socket->waitForConnected(2000))
+            socket->connectToHost(jsonObject["address"].toString(), jsonObject["port"].toInt() );
+            if(socket->waitForConnected(10000))
             {
-                    socket->write(jsonObject["message"].toString().toUtf8());
-                    socket->flush();
+                socket->write(jsonObject["message"].toString().toUtf8());
+                socket->flush();
+                qDebug() << "message" << jsonObject["message"].toString().toUtf8();
+                clientsHash.insert(jsonObject["login"].toString(), QByteArray::fromBase64(jsonObject["key"].toString().toUtf8()));
 
-                    clientsHash.insert(jsonObject["login"].toString(), QByteArray::fromBase64(jsonObject["key"].toString().toUtf8()));
-
+                QObject::connect(socket,&QTcpSocket::readyRead,this,&Client::slotProcessConnection);
+                QObject::connect(socket,&QTcpSocket::disconnected, this, &Client::deleteConnection);
             }
 
 
 
-             qDebug() << "CtC" << jsonObject["login"].toString() << jsonObject["port"].toString().toUShort();
+            qDebug() << "CtC" << jsonObject["login"].toString() << jsonObject["port"].toString().toUShort();
+        }
+        else if (jsonObject["action"].toString() == "userDeleted")
+        {
+            auto clientName = jsonObject["login"].toString();
+            connectedToClients.remove(clientName);
+            clientsHash.remove(clientName);
+            emit deleteClient(clientName);
         }
     }
     else if(getStatus() == NOT_AUTHORIZATED)
@@ -132,7 +157,7 @@ void Client::getInfoFromKDC()
             }
             qDebug() << "get message from KDC : " << "message=" << message;
         }
-         emit connectionStatus();
+        emit connectionStatus();
     }
 
 
@@ -172,11 +197,14 @@ void Client::sendMessage(const QString &recepient, const QString &message)
             socket->flush();
         }
 
-}
+    }
 }
 
 void Client::connectToClient(const QString &name)
 {
+
+    if(connectedToClients.contains(name))
+        return;
 
     QJsonObject jsonObj;
     QJsonDocument document;

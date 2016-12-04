@@ -94,7 +94,7 @@ void KDC::processConenction()
     }
     case STATUS::CONNECTED:
     {
-        qDebug() << "pizda";
+
         QJsonObject jsonFromObject;
         QJsonDocument jsonFromDocument;
 
@@ -133,11 +133,12 @@ void KDC::processConenction()
                         //jsonObject["clientTo"] = clientTo->getLogin();
                         jsonDocument.setObject(jsonObject);
                         QByteArray buffer = MainServer::aesEncrypt(MainServer::preEncryption(jsonDocument), clientTo->getHash());
-
+                        //qDebug() << "buffer" << buffer << "string" << QString(buffer);
                         QJsonObject jsonFirstClientObject;
                         jsonFirstClientObject.insert("action", "CtC");
-                        jsonFirstClientObject["message"] = QString(buffer);
+                        jsonFirstClientObject["message"] = QString(buffer.toBase64());
                         jsonFirstClientObject["login"]   = clientTo->getLogin();
+                        jsonFirstClientObject["address"]   = clientTo->getAddress().toString();
                         jsonFirstClientObject["port"]   = clientTo->getPort();
                         jsonFirstClientObject["key"]   = jsonObject["key"];
                         jsonDocument.setObject(jsonFirstClientObject);
@@ -183,6 +184,21 @@ void KDC::deleteConnection()
     socketClients.remove(socket);
     socket->deleteLater();
 
+    auto keys = socketClients.keys();
+    for(int i = 0; i < keys.size(); i++)
+    {
+        if(keys[i] != client->getSocket())
+        {
+            QJsonObject jsonObject;
+            QJsonDocument jsonDocument;
+            jsonObject.insert("action", "userDeleted");
+            jsonObject.insert("login", client->getLogin());
+            jsonDocument.setObject(jsonObject);
+            qDebug() << jsonDocument.toBinaryData();
+            keys[i]->write(MainServer::aesEncrypt(jsonDocument.toBinaryData().toBase64(), socketClients.value(keys[i])->getHash()));
+            keys[i]->flush();
+        }
+    }
     delete client;
     qDebug() << "client deleted";
 }

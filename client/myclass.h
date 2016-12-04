@@ -24,6 +24,8 @@ public:
                          this, &addClients );
         QObject::connect(&client, &Client::getNewMessage,
                          this, &processNewMessage );
+        QObject::connect(&client, &Client::deleteClient,
+                         this, &deleteClient );
     }
     QQmlApplicationEngine *engine;
 public slots:
@@ -93,23 +95,21 @@ public slots:
     }
     void addClients(QString newClient){
 
-        //        qDebug() << "add clients";
-        //        QObject *qmlRoot = engine->rootObjects().first();
-        //        QQuickItem *item = qvariant_cast<QQuickItem*> (qmlRoot->findChild<QQuickItem*>("loader")->property("item"));
-
         QObject *qmlRoot = engine->rootObjects().first();
         QQuickItem *item = qvariant_cast<QQuickItem*> (qmlRoot->findChild<QQuickItem*>("loader")->property("item"));
 
         auto clientsModel = item->findChild<QObject*>("clientsModel");
         QMetaObject::invokeMethod(clientsModel, "add", Q_ARG(QStringList, QStringList(newClient)));
 
-        //qDebug() << qmlRoot->findChild<QObject*>("loader")->property("item");
-        //        QMetaObject::invokeMethod(, "setModel",
-        //                Q_ARG(QVariant, map));
+    }
+    void deleteClient(QString client){
 
-        //        QStringList data;
-        //        data << "nasdfsdfu4" << "sdf";
-        //        qDebug() <<  item->findChild<QObject*>("clientsModel")->setProperty("data", data);
+        QObject *qmlRoot = engine->rootObjects().first();
+        QQuickItem *item = qvariant_cast<QQuickItem*> (qmlRoot->findChild<QQuickItem*>("loader")->property("item"));
+
+        auto clientsModel = item->findChild<QObject*>("clientsModel");
+        QMetaObject::invokeMethod(clientsModel, "deleteClient", Q_ARG(QString, client));
+
     }
     void processNewMessage(QString sender, QString message)
     {

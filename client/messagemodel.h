@@ -14,7 +14,7 @@ class MessageModel: public QSqlTableModel
 {
     Q_OBJECT
     Q_PROPERTY(QString recipient READ recipient WRITE setRecipient NOTIFY recipientChanged)
-    Q_PROPERTY(QString myName READ myName WRITE setMyName)
+    Q_PROPERTY(QString myName READ myName WRITE setMyName NOTIFY nameChanged)
 
 public:
 
@@ -36,6 +36,7 @@ public:
     Q_INVOKABLE void add(const QString & _sender,  const QString & _recepient, const QString & _message);
 signals:
     void recipientChanged();
+    void nameChanged();
 
 private:
 

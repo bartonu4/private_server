@@ -24,16 +24,16 @@ RowLayout {
         objectName: "messageModel"
 
     }
-//    Binding {
-//        function getValue(text){
-//        console.log("from binding"+text)
-//            return text;
-//        }
-//        target: messageModel
-//        property: "recipient"
-//        when:listClients.currentIndex >= 0
-//        value:getValue(listClients.delegate.text);
-//    }
+    //    Binding {
+    //        function getValue(text){
+    //        console.log("from binding"+text)
+    //            return text;
+    //        }
+    //        target: messageModel
+    //        property: "recipient"
+    //        when:listClients.currentIndex >= 0
+    //        value:getValue(listClients.delegate.text);
+    //    }
 
     Rectangle {
         color: "#eeeeee"
@@ -52,6 +52,7 @@ RowLayout {
             anchors.fill: parent
             id: listClients
             objectName: "listClients"
+
 
             signal chooseClient(string msg)
             currentIndex: -1
@@ -96,7 +97,7 @@ RowLayout {
                     messageModel.recipient = text;
                     console.log(listClients.currentIndex)
                     listClients.chooseClient(messageModel.recipient)
-
+                    listMessage.visible = true
                     //console.log(messageModel.recipient)
                     //clientsModel.add("nu4")
                 }
@@ -136,11 +137,11 @@ RowLayout {
             width: parent.width
             height: parent.height*0.7
             verticalLayoutDirection: ListView.BottomToTop
-
+            visible: false
 
             add: Transition {
-                      NumberAnimation { properties: "x,y"; from: 100; duration: 1000 }
-                  }
+                NumberAnimation { properties: "x,y"; from: 100; duration: 1000 }
+            }
             currentIndex: -1
 
             //width: 180; height: 200
@@ -186,19 +187,19 @@ RowLayout {
                     color:  senderMe ? "#D4F0C9" : "#DC8FF2"
 
                     Rectangle {
-//                        function getVisibility(model)
-//                        {
-//                            console.log(model.sender)
+                        //                        function getVisibility(model)
+                        //                        {
+                        //                            console.log(model.sender)
 
-//                            if(model.at(index).sender === model.sender )
-//                            {
-//                                return false;
-//                            }
-//                            else
-//                            {
-//                                return true;
-//                            }
-//                        }
+                        //                            if(model.at(index).sender === model.sender )
+                        //                            {
+                        //                                return false;
+                        //                            }
+                        //                            else
+                        //                            {
+                        //                                return true;
+                        //                            }
+                        //                        }
                         width: parent.width
                         //visible: getVisibility(model)
                         color:  "#586547"

@@ -53,6 +53,9 @@ int main(int argc, char *argv[])
     qDebug() << engine.rootContext()->baseUrl();
     // QQuickView view(QUrl(QStringLiteral("qrc:/client.qml")));
 
+    QByteArray nu4("abc") ;
+    QString ss(nu4);
+
 
 
 

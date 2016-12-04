@@ -16,6 +16,12 @@ void ClientsModel::add(const QStringList &client)
     emit dataChanged();
 }
 
+void ClientsModel::deleteClient(const QString &client)
+{
+    m_data.removeOne(client);
+    emit dataChanged();
+}
+
 QStringList ClientsModel::data()
 {
     return m_data;
