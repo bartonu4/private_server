@@ -5,6 +5,11 @@ QString MessageModel::recipient() const
     return m_recipient;
 }
 
+QString MessageModel::myName() const
+{
+    return m_name;
+}
+
 void MessageModel::setRecipient(const QString &recipient)
 {
     if (recipient == m_recipient)
@@ -13,11 +18,17 @@ void MessageModel::setRecipient(const QString &recipient)
     m_recipient = recipient;
 
     const QString filterString = QString::fromLatin1(
-                "(recipient = '%1' AND sender = 'me') OR (recipient = 'me' AND sender='%1')").arg(m_recipient);
+                "(recipient = '%2' AND sender = '%1') OR (recipient = '%1' AND sender='%2')").arg(m_name).arg(m_recipient);
+    //qDebug() << filterString;
     setFilter(filterString);
     select();
     qDebug() << "recipient changed " << recipient;
     emit recipientChanged();
+}
+
+void MessageModel::setMyName(const QString &name)
+{
+    m_name = name;
 }
 static QString conversationsTableName = "Conversations";
 
@@ -46,7 +57,7 @@ MessageModel::MessageModel(QObject *parent) :  QSqlTableModel(parent)
     // Ensures that the model is sorted correctly after submitting a new row.
     setEditStrategy(QSqlTableModel::OnManualSubmit);
 
-
+    //setRecipient("valera");
 
 
 }
@@ -59,8 +70,8 @@ QVariant MessageModel::data(const QModelIndex &index, int role) const
         return QSqlTableModel::data(index, role);
 
     const QSqlRecord sqlRecord = record(rowCount() - index.row() - 1);
-    //qDebug() << role<< sqlRecord.value(role - Qt::UserRole -1 );
-    return sqlRecord.value(role - Qt::UserRole-1);
+    //qDebug() << role<< sqlRecord.value(role - Qt::UserRole - 1 );
+    return sqlRecord.value(role - Qt::UserRole - 1);
 }
 
 QHash<int, QByteArray> MessageModel::roleNames() const
@@ -72,13 +83,13 @@ QHash<int, QByteArray> MessageModel::roleNames() const
     return roles;
 }
 
-void MessageModel::add( const QString & _recepient, const QString & _message)
+void MessageModel::add(const QString & _sender,  const QString & _recepient, const QString & _message)
 {
 
     QSqlRecord newRecord = record();
-    newRecord.setValue(roleSender - Qt::UserRole -1, "me");
-    newRecord.setValue(roleRecipient - Qt::UserRole -1, _recepient);
-    newRecord.setValue(roleMessage - Qt::UserRole -1, _message);
+    newRecord.setValue(roleSender - Qt::UserRole - 1, _sender );
+    newRecord.setValue(roleRecipient - Qt::UserRole - 1, _recepient == "0" ? m_name : _recepient );
+    newRecord.setValue(roleMessage - Qt::UserRole - 1, _message);
     if (!insertRecord(rowCount(), newRecord)) {
         qWarning() << "Failed to send message:" << lastError().text()<<rowCount();
         return;

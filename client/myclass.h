@@ -22,6 +22,8 @@ public:
                          this, &waitForStatusClient );
         QObject::connect(&client, &Client::newClientAvailable,
                          this, &addClients );
+        QObject::connect(&client, &Client::getNewMessage,
+                         this, &processNewMessage );
     }
     QQmlApplicationEngine *engine;
 public slots:
@@ -35,13 +37,22 @@ public slots:
         client.connectToKDC();
 
 
-//        QObject *qmlRoot = engine->rootObjects().first();
-//        QQuickItem *item = qvariant_cast<QQuickItem*> (qmlRoot->findChild<QQuickItem*>("loader")->property("item"));
+        //        QObject *qmlRoot = engine->rootObjects().first();
+        //        QQuickItem *item = qvariant_cast<QQuickItem*> (qmlRoot->findChild<QQuickItem*>("loader")->property("item"));
 
-//        auto clientsModel = item->findChild<QObject*>("clientsModel");
-//        QMetaObject::invokeMethod(clientsModel, "add", Q_ARG(QStringList, QStringList("nu4")));
+        //        auto clientsModel = item->findChild<QObject*>("clientsModel");
+        //        QMetaObject::invokeMethod(clientsModel, "add", Q_ARG(QStringList, QStringList("nu4")));
 
 
+    }
+    void chooseClient(const QString &name)
+    {
+        client.connectToClient(name);
+    }
+    void sendMessage(const QString &recepient, const QString &message)
+    {
+        qDebug() << "sendMessage" << recepient << message;
+        client.sendMessage(recepient, message);
     }
     void waitForStatusClient()
     {
@@ -52,7 +63,7 @@ public slots:
         //QQuickItem *loaderSource = qvariant_cast<QQuickItem*> (qmlRoot->findChild<QQuickItem*>("loader")->property("source"));
 
         auto dialog = loaderItem->findChild<QObject*>("messageDialogObj");
-          qDebug() << loader << loaderItem << dialog;
+        qDebug() << loader << loaderItem << dialog;
         switch (client.getStatus())
         {
         case Client::STATUS::NO_CONNECTION:
@@ -64,10 +75,17 @@ public slots:
             dialog->setProperty("visible", true);
             break;
         case Client::STATUS::AUTHORIZATED:
+            //Load objects synchronious
             QMetaObject::invokeMethod(loader, "setClient");
+
             QQuickItem *loaderItem = qvariant_cast<QQuickItem*> (loader->property("item"));
             auto clientModel = loaderItem->findChild<QObject*>("listClients");
-            QObject::connect(clientModel, SIGNAL(chooseClient(QString)), &client, SLOT(connectToClient(QString)));
+            QObject::connect(clientModel, SIGNAL(chooseClient(QString)), this, SLOT(chooseClient(QString)));
+
+            auto messageModel = loaderItem->findChild<QObject*>("messageModel");
+            QMetaObject::invokeMethod(messageModel, "setMyName", Q_ARG(QString, client.getLogin()));
+            QObject::connect(messageModel, SIGNAL(sendMessage(QString, QString)), this, SLOT(sendMessage(QString,QString)));
+            qDebug() << " HERERERER";
             break;
         }
 
@@ -79,11 +97,11 @@ public slots:
         //        QObject *qmlRoot = engine->rootObjects().first();
         //        QQuickItem *item = qvariant_cast<QQuickItem*> (qmlRoot->findChild<QQuickItem*>("loader")->property("item"));
 
-                QObject *qmlRoot = engine->rootObjects().first();
-                QQuickItem *item = qvariant_cast<QQuickItem*> (qmlRoot->findChild<QQuickItem*>("loader")->property("item"));
+        QObject *qmlRoot = engine->rootObjects().first();
+        QQuickItem *item = qvariant_cast<QQuickItem*> (qmlRoot->findChild<QQuickItem*>("loader")->property("item"));
 
-                auto clientsModel = item->findChild<QObject*>("clientsModel");
-                QMetaObject::invokeMethod(clientsModel, "add", Q_ARG(QStringList, QStringList(newClient)));
+        auto clientsModel = item->findChild<QObject*>("clientsModel");
+        QMetaObject::invokeMethod(clientsModel, "add", Q_ARG(QStringList, QStringList(newClient)));
 
         //qDebug() << qmlRoot->findChild<QObject*>("loader")->property("item");
         //        QMetaObject::invokeMethod(, "setModel",
@@ -92,6 +110,15 @@ public slots:
         //        QStringList data;
         //        data << "nasdfsdfu4" << "sdf";
         //        qDebug() <<  item->findChild<QObject*>("clientsModel")->setProperty("data", data);
+    }
+    void processNewMessage(QString sender, QString message)
+    {
+        QObject *qmlRoot = engine->rootObjects().first();
+        auto loader = qmlRoot->findChild<QQuickItem*>("loader");
+        QQuickItem *loaderItem = qvariant_cast<QQuickItem*> (loader->property("item"));
+        auto messageModel = loaderItem->findChild<QObject*>("messageModel");
+        qDebug() << "sender" << sender << message;
+        QMetaObject::invokeMethod(messageModel, "add", Q_ARG(QString, sender), Q_ARG(QString, QString("0")), Q_ARG(QString, message));
     }
 };
 #endif // MYCLASS_H

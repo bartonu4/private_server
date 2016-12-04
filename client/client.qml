@@ -11,6 +11,7 @@ RowLayout {
 
 
     signal addButton()
+
     ClientsModel {
         id: clientsModel
         objectName: "clientsModel"
@@ -18,6 +19,7 @@ RowLayout {
 
     }
     MessageModel {
+        signal sendMessage(string recepient, string message)
         id: messageModel
         objectName: "messageModel"
 
@@ -152,12 +154,13 @@ RowLayout {
                 }
                 id: messageId
                 text: model.message
+                property bool senderMe: model.sender === messageModel.myName
                 anchors.right:senderMe ? parent.right : undefined
                 anchors.margins: 10
                 width: calculateSize(parent.width, contentMessage.contentWidth)
 
 
-                property bool senderMe: model.sender ==="me"
+
                 highlighted: ListView.isCurrentItem
                 contentItem: Text {
                     id: contentMessage
@@ -210,6 +213,7 @@ RowLayout {
                 onClicked: {
                     listClients.currentIndex = index
                     console.log(messageId.text)
+                    console.log(listMessage.model.sender)
                 }
 
 
@@ -240,8 +244,11 @@ RowLayout {
                 Keys.onReturnPressed: {
                     if(text.length > 0)
                     {
-                        messageModel.add(messageModel.recipient, text)
+                        messageModel.add(messageModel.myName, messageModel.recipient, text)
+                        messageModel.sendMessage(messageModel.recipient, text)
                         console.log(text)
+
+                        //textAreaMessage.clear()
                     }
                 }
 

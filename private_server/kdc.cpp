@@ -120,7 +120,7 @@ void KDC::processConenction()
             QJsonDocument jsonDocument;
             jsonObject.insert("action", "CtC");
             jsonObject["login"] = client->getLogin();
-            jsonObject["key"] = QString(MainServer::generateKey());
+            jsonObject["key"] = QString(MainServer::generateKey().toBase64());
 
             auto keys = socketClients.keys();
             for(int i = 0; i < keys.size(); i++)

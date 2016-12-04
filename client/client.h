@@ -31,9 +31,12 @@ public:
     STATUS getStatus() const;
     void setStatus(const STATUS &value);
 
+    void sendMessage(const QString &recepient, const QString &message);
+
 public slots:
     void slotNewConnection();
     void slotProcessConnection();
+    void deleteConnection();
     void establishSecureConnection();
     void getInfoFromKDC();
     void connectToClient(const QString &name);
@@ -50,6 +53,7 @@ private:
 signals:
     void connectionStatus();
     void newClientAvailable(QString client);
+    void getNewMessage(QString client, QString message);
 };
 
 #endif // CLIENT_H

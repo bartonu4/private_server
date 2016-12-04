@@ -85,7 +85,7 @@ QByteArray MainServer::aesEncrypt(QString message, QByteArray hash)
         catch(const CryptoPP::Exception& e)
         {
 
-            exit(1);
+
         }
 ;
 
