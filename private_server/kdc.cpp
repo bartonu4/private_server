@@ -89,6 +89,15 @@ void KDC::processConenction()
             }
 
         }
+        else
+        {
+            if(client->getStatus() == ServerClient::REJECTED)
+            {
+
+                socket->disconnectFromHost();
+            }
+
+        }
 
         break;
     }
@@ -189,14 +198,17 @@ void KDC::deleteConnection()
     {
         if(keys[i] != client->getSocket())
         {
-            QJsonObject jsonObject;
-            QJsonDocument jsonDocument;
-            jsonObject.insert("action", "userDeleted");
-            jsonObject.insert("login", client->getLogin());
-            jsonDocument.setObject(jsonObject);
-            qDebug() << jsonDocument.toBinaryData();
-            keys[i]->write(MainServer::aesEncrypt(jsonDocument.toBinaryData().toBase64(), socketClients.value(keys[i])->getHash()));
-            keys[i]->flush();
+            if(socketClients.value(keys[i])->getStatus() == ServerClient::CONNECTED)
+            {
+                QJsonObject jsonObject;
+                QJsonDocument jsonDocument;
+                jsonObject.insert("action", "userDeleted");
+                jsonObject.insert("login", client->getLogin());
+                jsonDocument.setObject(jsonObject);
+                qDebug() << jsonDocument.toBinaryData();
+                keys[i]->write(MainServer::aesEncrypt(jsonDocument.toBinaryData().toBase64(), socketClients.value(keys[i])->getHash()));
+                keys[i]->flush();
+            }
         }
     }
     delete client;

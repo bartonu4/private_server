@@ -8,7 +8,7 @@ class ServerClient
 
 
 public:
- enum STATUS{NEW_CONNECTION, IDENTIFIED, KEY_GENERATED, AUTHENTIFICATED, CONNECTED };
+ enum STATUS{NEW_CONNECTION, IDENTIFIED, KEY_GENERATED, AUTHENTIFICATED, CONNECTED, REJECTED};
     ServerClient();
     int getId() const;
     void setId(int value);
