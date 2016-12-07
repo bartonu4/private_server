@@ -178,7 +178,12 @@ QByteArray MainServer::generateKey()
     QByteArray bkey;
     foreach (auto byte, key) {
         bkey.append((char) byte);
+//        bkey.append((char)0);
     }
+//    for(int i = 13; i < bkey.size(); i++)
+//    {
+//        bkey[i] = (char) qrand();
+//    }
 
     return bkey;
 

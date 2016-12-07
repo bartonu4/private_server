@@ -193,6 +193,7 @@ void Client::sendMessage(const QString &recepient, const QString &message)
             auto socket = connectedToClients.value(keys[i]);
             auto sessionHash = clientsHash.value(recepient);
             qDebug() <<"HASH" <<sessionHash;
+            qDebug() << "MSG: " << QString(MainServer::aesEncrypt(MainServer::preEncryption(document), sessionHash).toBase64());
             socket->write(MainServer::aesEncrypt(MainServer::preEncryption(document), sessionHash));
             socket->flush();
         }
@@ -260,7 +261,7 @@ void Client::connectToKDC()
         qDebug("Connected!");
         this->setStatus(Client::NOT_AUTHORIZATED);
 
-        auto hash          = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Md5);
+        QByteArray hash          = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Md5);
         sethash(hash);
         auto encrypted     = MainServer::aesEncrypt(password,hash);
         auto portEncrypted = MainServer::aesEncrypt(QString("%1").arg(serverPort()), hash);
